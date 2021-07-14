@@ -256,8 +256,67 @@ Public Class AppSettingHelper
     }
 
     ''' <summary>
-    ''' ERP数据库(只读权限)
+    ''' 开机启动
     ''' </summary>
-    Public Const SqlServerConn = "Server=192.168.101.83;Database=XYS02;uid=kf;pwd=yestech.com;Trusted_Connection=false;MultipleActiveResultSets=true;"
+    Public StartAutoRun As Boolean
+
+    ''' <summary>
+    ''' 通知发送时间
+    ''' </summary>
+    Public SendMsgTime As TimeSpan
+
+    ''' <summary>
+    ''' 归还日期提前提醒天数
+    ''' </summary>
+    Public AdvanceNoticeDays As Integer
+
+    ''' <summary>
+    ''' 无归还日期单据的默认使用天数
+    ''' </summary>
+    Public DefaultUsageDays As Integer
+
+    ''' <summary>
+    ''' ERP数据库连接字符串
+    ''' </summary>
+    Public ERPSqlServerConnStr As String
+
+    ''' <summary>
+    ''' 钉钉AgentId
+    ''' </summary>
+    Public DingTalkAgentId As Long
+
+    ''' <summary>
+    ''' 钉钉AppKey
+    ''' </summary>
+    Public DingTalkAppKey As String
+
+    ''' <summary>
+    ''' 钉钉AppSecret
+    ''' </summary>
+    Public DingTalkAppSecret As String
+
+    ''' <summary>
+    ''' 钉钉AccessToken
+    ''' </summary>
+    <Newtonsoft.Json.JsonIgnore>
+    Public DingTalkAccessToken As String
+
+    ''' <summary>
+    ''' 表单集合
+    ''' </summary>
+    <Newtonsoft.Json.JsonIgnore>
+    Public DocumentItems As New List(Of DocumentInfo)
+
+    ''' <summary>
+    ''' 钉钉员工工号查找表
+    ''' </summary>
+    <Newtonsoft.Json.JsonIgnore>
+    Public DingTalkUserJobNumberItems As New Dictionary(Of String, String)
+
+    ''' <summary>
+    ''' 钉钉部门ID查找表
+    ''' </summary>
+    <Newtonsoft.Json.JsonIgnore>
+    Public DingTalkDepartmentIDItems As New HashSet(Of Long)
 
 End Class

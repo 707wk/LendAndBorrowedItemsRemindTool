@@ -7,7 +7,7 @@ Public Class AppCenterSparkle
 
     Private currentVersion As String
 
-    Private MainUI As Window
+    Private MainUI As MainWindow
 
     ''' <summary>
     ''' 查询间隔,默认60s
@@ -75,29 +75,29 @@ Public Class AppCenterSparkle
 
                                  Else
 
-                                     If CType(MainUI.Dispatcher.Invoke(Function()
+                                     '                                     If CType(MainUI.Dispatcher.Invoke(Function()
 
-                                                                           Return MsgBox($"有新版本发布
-当前版本 : {currentVersion}
-最新版本 : {enclosureNode.Attributes("sparkle:version").Value}
-发布日期 : {tmpubDate:d}
-更新说明 :
-{tmpHtmlDocument.DocumentNode.InnerText()}
-是否更新 ?", MsgBoxStyle.YesNo Or MsgBoxStyle.Information, "升级提醒")
+                                     '                                                                           Return MsgBox($"有新版本发布
+                                     '当前版本 : {currentVersion}
+                                     '最新版本 : {enclosureNode.Attributes("sparkle:version").Value}
+                                     '发布日期 : {tmpubDate:d}
+                                     '更新说明 :
+                                     '{tmpHtmlDocument.DocumentNode.InnerText()}
+                                     '是否更新 ?", MsgBoxStyle.YesNo Or MsgBoxStyle.Information, "升级提醒")
 
-                                                                       End Function), MsgBoxResult) = MsgBoxResult.Yes Then
+                                     '                                                                       End Function), MsgBoxResult) = MsgBoxResult.Yes Then
 
-                                         Process.Start("DownloadUpdate.exe", $"""{enclosureNode.Attributes("url").Value}"" ""{System.Reflection.Assembly.GetExecutingAssembly().Location}""")
+                                     Process.Start("DownloadUpdate.exe", $"""{enclosureNode.Attributes("url").Value}"" ""{System.Reflection.Assembly.GetExecutingAssembly().Location}""")
 
-                                         MainUI.Dispatcher.Invoke(Sub()
-                                                                      MainUI.Close()
-                                                                  End Sub)
+                                     MainUI.Dispatcher.Invoke(Sub()
+                                                                  MainUI.Shutdown()
+                                                              End Sub)
 
-                                     Else
-                                         '退出检测
-                                         Console.WriteLine("退出升级检测")
-                                         Exit Do
-                                     End If
+                                     'Else
+                                     '    '退出检测
+                                     '    Console.WriteLine("退出升级检测")
+                                     '    Exit Do
+                                     'End If
 
                                  End If
 

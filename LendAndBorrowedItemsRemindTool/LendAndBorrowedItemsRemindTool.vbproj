@@ -155,6 +155,9 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="TopSdk">
+      <HintPath>T:\DotNetDLL\dingtalk-sdk\TopSdk.dll</HintPath>
+    </Reference>
     <Reference Include="Wangk.ResourceWPF">
       <HintPath>T:\WangkNamespace\DLL\Wangk.ResourceWPF.dll</HintPath>
     </Reference>
@@ -199,6 +202,7 @@
     <Compile Include="02.BusinessLogicLayer\LocalDatabaseHelper.vb" />
     <Compile Include="02.BusinessLogicLayer\UIHelper.vb" />
     <Compile Include="03.DataAccessLayer\AppSettingHelper.vb" />
+    <Compile Include="03.DataAccessLayer\DocumentInfo.vb" />
     <Compile Include="03.DataAccessLayer\Tool\AppCenterSparkle.vb" />
     <Compile Include="03.DataAccessLayer\Tool\FileHelper.vb" />
     <Compile Include="03.DataAccessLayer\Tool\StringHelper.vb" />
@@ -253,7 +257,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
-    <None Include="NLog.config" />
+    <None Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

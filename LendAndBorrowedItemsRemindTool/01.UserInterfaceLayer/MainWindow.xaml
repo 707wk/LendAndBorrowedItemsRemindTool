@@ -12,12 +12,44 @@
         WindowStartupLocation="CenterScreen"
         WindowState="Normal"
         FontFamily="微软雅黑"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+
+        <Style TargetType="MenuItem">
+            <Setter Property="Padding"
+                    Value="4" />
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin"
+                    Value="3" />
+            <Setter Property="VerticalAlignment"
+                    Value="Center" />
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center" />
+            <Setter Property="Margin"
+                    Value="3" />
+            <Setter Property="MinHeight"
+                    Value="24" />
+        </Style>
+
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin"
+                    Value="3" />
+        </Style>
+
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0">
@@ -32,6 +64,166 @@
                           Click="AboutMenuItem_Click" />
             </MenuItem>
         </Menu>
+
+        <StackPanel Grid.Row="1">
+
+            <GroupBox Header="常规设置">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="开机自启 :"
+                               Grid.Row="0"
+                               Grid.Column="0" />
+                    <CheckBox x:Name="StartAutoRun"
+                              Content="启用"
+                              Grid.Row="0"
+                              Grid.Column="1"
+                              Margin="3" />
+
+                    <TextBlock Text="通知发送时间 :"
+                               Grid.Row="1"
+                               Grid.Column="0" />
+                    <local:PropertySelectControl x:Name="SendMsgTime"
+                                                 IsEditable="True"
+                                                 HistoryItemKey="SendMsgTime"
+                                                 Grid.Row="1"
+                                                 Grid.Column="1"
+                                                 Margin="3"
+                                                 Width="120"
+                                                 HorizontalAlignment="Left" />
+
+                    <TextBlock Text="归还日期提前提醒天数 :"
+                               Grid.Row="2"
+                               Grid.Column="0" />
+                    <local:PropertySelectControl x:Name="AdvanceNoticeDays"
+                                                 IsEditable="True"
+                                                 HistoryItemKey="AdvanceNoticeDays"
+                                                 Grid.Row="2"
+                                                 Grid.Column="1"
+                                                 Margin="3"
+                                                 Width="120"
+                                                 HorizontalAlignment="Left" />
+
+                    <TextBlock Text="无归还日期单据的默认使用天数 :"
+                               Grid.Row="3"
+                               Grid.Column="0" />
+                    <local:PropertySelectControl x:Name="DefaultUsageDays"
+                                                 IsEditable="True"
+                                                 HistoryItemKey="DefaultUsageDays"
+                                                 Grid.Row="3"
+                                                 Grid.Column="1"
+                                                 Margin="3"
+                                                 Width="120"
+                                                 HorizontalAlignment="Left" />
+
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="ERP参数设置">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="数据库连接字符串 :"
+                               Grid.Row="0"
+                               Grid.Column="0" />
+                    <local:PropertySelectControl x:Name="ERPSqlServerConnStr"
+                                                 IsEditable="True"
+                                                 HistoryItemKey="ERPSqlServerConnStr"
+                                                 Grid.Row="0"
+                                                 Grid.Column="1"
+                                                 Margin="3" />
+
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="钉钉参数设置">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="AgentId :"
+                               Grid.Row="0"
+                               Grid.Column="0" />
+                    <local:PropertySelectControl x:Name="DingTalkAgentIdStr"
+                                                 IsEditable="True"
+                                                 HistoryItemKey="DingTalkAgentIdStr"
+                                                 Grid.Row="0"
+                                                 Grid.Column="1"
+                                                 Margin="3" />
+
+                    <TextBlock Text="AppKey :"
+                               Grid.Row="1"
+                               Grid.Column="0" />
+                    <local:PropertySelectControl x:Name="DingTalkAppKey"
+                                                 IsEditable="True"
+                                                 HistoryItemKey="DingTalkAppKey"
+                                                 Grid.Row="1"
+                                                 Grid.Column="1"
+                                                 Margin="3" />
+
+                    <TextBlock Text="AppSecret :"
+                               Grid.Row="2"
+                               Grid.Column="0" />
+                    <local:PropertySelectControl x:Name="DingTalkAppSecret"
+                                                 IsEditable="True"
+                                                 HistoryItemKey="DingTalkAppSecret"
+                                                 Grid.Row="2"
+                                                 Grid.Column="1"
+                                                 Margin="3" />
+
+                </Grid>
+            </GroupBox>
+
+        </StackPanel>
+
+        <StackPanel Grid.Row="2"
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="3">
+
+            <Button Content="测试数据"
+                    Width="120"
+                    Margin="3"
+                    Padding="3"
+                    Click="Test" />
+
+            <Button Content="保存修改"
+                    Width="120"
+                    Margin="3"
+                    Padding="3"
+                    Click="SaveChange" />
+
+            <Button Content="取消"
+                    Width="120"
+                    Margin="3"
+                    Padding="3"
+                    Click="NotSaveChange">
+            </Button>
+
+        </StackPanel>
 
     </Grid>
 
