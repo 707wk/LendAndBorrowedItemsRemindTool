@@ -10,6 +10,27 @@
     ''' </summary>
     Public JYDX As Integer
 
+    Private Shared JYDXIDToNameItems As New Dictionary(Of Integer, String) From {
+        {1, "客户"},
+        {2, "供应商"},
+        {3, "人员"},
+        {9, "其它"}
+        }
+
+    ''' <summary>
+    ''' 交易对象名称
+    ''' </summary>
+    Public ReadOnly Property JYDXStr As String
+        Get
+
+            If Not JYDXIDToNameItems.ContainsKey(JYDX) Then
+                Return "未定义"
+            End If
+
+            Return JYDXIDToNameItems(JYDX)
+        End Get
+    End Property
+
     ''' <summary>
     ''' 对象编号
     ''' </summary>

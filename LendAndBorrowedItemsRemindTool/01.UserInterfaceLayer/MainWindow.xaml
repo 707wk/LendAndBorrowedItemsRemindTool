@@ -204,11 +204,11 @@
                     HorizontalAlignment="Right"
                     Margin="3">
 
-            <Button Content="测试数据"
+            <Button Content="立即发送"
                     Width="120"
                     Margin="3"
                     Padding="3"
-                    Click="Test" />
+                    Click="SendMessage" />
 
             <Button Content="保存修改"
                     Width="120"

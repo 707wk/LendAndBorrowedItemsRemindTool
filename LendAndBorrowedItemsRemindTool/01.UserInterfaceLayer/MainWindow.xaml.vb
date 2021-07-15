@@ -1,10 +1,15 @@
 ﻿Imports System.Data.SqlClient
+Imports System.IO
+Imports System.Timers
 Imports DingTalk.Api
 Imports DingTalk.Api.Request
 Imports DingTalk.Api.Response
+Imports Microsoft.AppCenter.Analytics
 Imports OfficeOpenXml
 
 Class MainWindow
+
+    Private SendTimer As Timer
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
 
@@ -18,9 +23,47 @@ Class MainWindow
 
         StartAutoRun.IsChecked = AppSettingHelper.Instance.StartAutoRun
 
+        SendTimer = New Timer With {
+            .Interval = 30 * 1000
+        }
+        AddHandler SendTimer.Elapsed, AddressOf SendTimerElapsed
+
+        SendTimer.Start()
+
+    End Sub
+
+    ''' <summary>
+    ''' 定时处理
+    ''' </summary>
+    Private Sub SendTimerElapsed(sender As Object, e As ElapsedEventArgs)
+        Console.WriteLine("定时处理")
+
+        ' 定时发送
+        If Now.Hour <> AppSettingHelper.Instance.SendMsgTime.Hours OrElse
+            Now.Minute <> AppSettingHelper.Instance.SendMsgTime.Minutes Then
+            Exit Sub
+        End If
+
+        ' 一天只自动发送一次
+        If AppSettingHelper.Instance.LastSendDate = Now.Date Then
+            Exit Sub
+        End If
+
+        AppSettingHelper.Instance.LastSendDate = Now.Date
+        AppSettingHelper.SaveToLocaltion()
+
+        Analytics.TrackEvent("自动发送通知")
+
+        Me.Dispatcher.Invoke(Sub()
+                                 SendMessage(Nothing, Nothing)
+                             End Sub)
+
     End Sub
 
     Public Sub Shutdown()
+
+        SendTimer.Stop()
+        RemoveHandler SendTimer.Elapsed, AddressOf SendTimerElapsed
 
         AppSettingHelper.SaveToLocaltion()
 
@@ -53,7 +96,11 @@ Class MainWindow
 
     End Sub
 
-    Private Sub Test(sender As Object, e As RoutedEventArgs)
+    Private Sub SendMessage(sender As Object, e As RoutedEventArgs)
+
+        If e IsNot Nothing Then
+            Analytics.TrackEvent("手动发送通知")
+        End If
 
         Dim tmpWindow As New Wangk.ResourceWPF.BackgroundWork(Me) With {
             .Title = "初始化"
@@ -208,12 +255,21 @@ order by 交易日期
 #End Region
 
 #Region "发送工作通知消息"
-                          uie.Write("获取钉钉员工信息", 4 * 100 / stepCount)
+                          uie.Write("发送工作通知消息", 4 * 100 / stepCount)
 
                           ' 无对应的钉钉账号的ERP用户
                           Dim NotHaveJobNumberUserItems As New Dictionary(Of String, String)
 
+                          tmpID = 1
                           For Each item In AppSettingHelper.Instance.DocumentItems
+
+                              uie.Write($"发送工作通知消息 {tmpID}/{AppSettingHelper.Instance.DocumentItems.Count}")
+                              tmpID += 1
+
+                              ' 判断是否需要提醒
+                              If (item.ZJXGHRQ - Now).TotalDays > AppSettingHelper.Instance.AdvanceNoticeDays Then
+                                  Continue For
+                              End If
 
                               ' 判断是否有对应的钉钉账号
                               If Not AppSettingHelper.Instance.DingTalkUserJobNumberItems.ContainsKey(item.YGBH) Then
@@ -227,20 +283,41 @@ order by 交易日期
                               End If
 
                               ' 发送消息
-                              SendDingTalkMessage(AppSettingHelper.Instance.DingTalkUserJobNumberItems(item.YGBH), item)
+                              SendDingTalkWorkMessage(AppSettingHelper.Instance.DingTalkUserJobNumberItems(item.YGBH), item)
+
+                              'SendDingTalkMessage("3349644230885065", item)
+                              'Exit For
 
                           Next
 
-                          For Each item In NotHaveJobNumberUserItems
-                              Console.WriteLine($"{item.Key} {item.Value}")
-                          Next
+                          'Using tmpStreamWriter As New StreamWriter("无对应的钉钉账号的ERP用户.txt", False)
+
+                          '    tmpStreamWriter.WriteLine($"工号{vbTab}姓名")
+
+                          '    For Each item In NotHaveJobNumberUserItems
+                          '        tmpStreamWriter.WriteLine($"{item.Key}{vbTab}{item.Value}")
+                          '    Next
+
+                          'End Using
+
+                          ' 通知管理员更新账号信息
+                          If NotHaveJobNumberUserItems.Count > 0 Then
+
+                              Dim tempAdminMessage = $"无对应的钉钉账号的ERP用户  
+> 工号{vbTab}姓名  
+{String.Join(vbCrLf, From item In NotHaveJobNumberUserItems
+                     Select $"> {item.Key}{vbTab}{item.Value}  ")}"
+
+                              SendDingTalkMessageToAdmin(tempAdminMessage)
+
+                          End If
 
 #End Region
 
                       End Sub)
 
         If tmpWindow.Error IsNot Nothing Then
-            MsgBox(tmpWindow.Error.Message, MsgBoxStyle.Information, tmpWindow.Title)
+            Wangk.ResourceWPF.Toast.ShowError(Me, tmpWindow.Error.Message)
             Exit Sub
         End If
 
@@ -337,22 +414,89 @@ order by 交易日期
     ''' <summary>
     ''' 向钉钉用户发送工作通知消息
     ''' </summary>
-    Private Sub SendDingTalkMessage(dingTalkUserid As String,
-                                    doc As DocumentInfo)
+    Private Sub SendDingTalkWorkMessage(dingTalkUserid As String,
+                                        doc As DocumentInfo)
 
         Dim client As IDingTalkClient = New DefaultDingTalkClient("https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2")
-        Dim req As OapiMessageCorpconversationAsyncsendV2Request = New OapiMessageCorpconversationAsyncsendV2Request()
-        req.AgentId = AppSettingHelper.Instance.DingTalkAgentId
-        req.UseridList = dingTalkUserid
-        Dim obj1 As OapiMessageCorpconversationAsyncsendV2Request.MsgDomain = New OapiMessageCorpconversationAsyncsendV2Request.MsgDomain()
-        obj1.Msgtype = "markdown"
-        Dim obj2 As OapiMessageCorpconversationAsyncsendV2Request.MarkdownDomain = New OapiMessageCorpconversationAsyncsendV2Request.MarkdownDomain()
-        obj2.Text = "002"
-        obj2.Title = "001"
+        Dim req As New OapiMessageCorpconversationAsyncsendV2Request With {
+            .AgentId = AppSettingHelper.Instance.DingTalkAgentId,
+            .UseridList = dingTalkUserid
+        }
+        Dim obj1 As New OapiMessageCorpconversationAsyncsendV2Request.MsgDomain With {
+            .Msgtype = "markdown"
+        }
+        Dim obj2 As New OapiMessageCorpconversationAsyncsendV2Request.MarkdownDomain With {
+            .Text = $"**<font color=#1296DB>{doc.JYDB} - {doc.JYDH}</font>**
+
+------
+通知时间 : {Now:G}  
+交易日期 : {doc.JYRQ:d}  
+交易对象 : {doc.JYDXStr}  
+借出/入对象 : {doc.DXQC}({doc.DXBH})  
+需归还物品种数 : {doc.XGHWPZS}  
+最近需归还日期 : {doc.ZJXGHRQ:d}",
+            .Title = $"{doc.JYDB} - {doc.JYDH}"
+        }
         obj1.Markdown = obj2
         req.Msg_ = obj1
         Dim rsp As OapiMessageCorpconversationAsyncsendV2Response = client.Execute(req, AppSettingHelper.Instance.DingTalkAccessToken)
-        Console.WriteLine(rsp.Body)
+
+    End Sub
+#End Region
+
+#Region "发送消息给所有主管理员"
+    ''' <summary>
+    ''' 发送消息给所有主管理员
+    ''' </summary>
+    Private Sub SendDingTalkMessageToAdmin(msg As String)
+
+        For Each item In GetDingTalkAdminItems()
+            SendDingTalkAdminMessage(item, msg)
+        Next
+
+    End Sub
+#End Region
+
+#Region "获取主管理员列表"
+    ''' <summary>
+    ''' 获取主管理员列表
+    ''' </summary>
+    Private Function GetDingTalkAdminItems() As List(Of String)
+
+        Dim client As New DefaultDingTalkClient("https://oapi.dingtalk.com/topapi/user/listadmin")
+        Dim req As New OapiUserListadminRequest()
+        Dim rsp As OapiUserListadminResponse = client.Execute(req, AppSettingHelper.Instance.DingTalkAccessToken)
+
+        Return (From item In rsp.Result
+                Where item.SysLevel = 1
+                Select item.Userid).ToList
+
+    End Function
+#End Region
+
+#Region "发送消息给主管理员"
+    ''' <summary>
+    ''' 发送消息给主管理员
+    ''' </summary>
+    Private Sub SendDingTalkAdminMessage(dingTalkUserid As String,
+                                         msg As String)
+
+        Dim client As IDingTalkClient = New DefaultDingTalkClient("https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2")
+        Dim req As New OapiMessageCorpconversationAsyncsendV2Request With {
+            .AgentId = AppSettingHelper.Instance.DingTalkAgentId,
+            .UseridList = dingTalkUserid
+        }
+        Dim obj1 As New OapiMessageCorpconversationAsyncsendV2Request.MsgDomain With {
+            .Msgtype = "markdown"
+        }
+        Dim obj2 As New OapiMessageCorpconversationAsyncsendV2Request.MarkdownDomain With {
+            .Text = msg,
+            .Title = "管理员消息"
+        }
+        obj1.Markdown = obj2
+        req.Msg_ = obj1
+        Dim rsp As OapiMessageCorpconversationAsyncsendV2Response = client.Execute(req, AppSettingHelper.Instance.DingTalkAccessToken)
+
 
     End Sub
 #End Region
@@ -360,6 +504,34 @@ order by 交易日期
     Private Sub SaveChange(sender As Object, e As RoutedEventArgs)
 
         Try
+
+            If AppSettingHelper.Instance.StartAutoRun <> StartAutoRun.IsChecked Then
+
+                If StartAutoRun.IsChecked Then
+
+                    Dim shortcutPath As String = $"{System.Environment.GetFolderPath(Environment.SpecialFolder.Startup) }\{My.Application.Info.ProductName}.lnk"
+                    Dim tmpWshShell = New IWshRuntimeLibrary.WshShell()
+                    Dim tmpIWshShortcut As IWshRuntimeLibrary.IWshShortcut = tmpWshShell.CreateShortcut(shortcutPath)
+                    With tmpIWshShortcut
+                        .TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location
+                        .WorkingDirectory = IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                        .WindowStyle = 1
+                        .Description = My.Application.Info.ProductName
+                        .IconLocation = .TargetPath
+                        .Save()
+                    End With
+
+                Else
+                    Dim shortcutPath As String = $"{System.Environment.GetFolderPath(Environment.SpecialFolder.Startup) }\{My.Application.Info.ProductName}.lnk"
+                    Try
+                        IO.File.Delete(shortcutPath)
+#Disable Warning CA1031 ' Do not catch general exception types
+                    Catch ex As Exception
+#Enable Warning CA1031 ' Do not catch general exception types
+                    End Try
+
+                End If
+            End If
 
             AppSettingHelper.Instance.StartAutoRun = StartAutoRun.IsChecked
 
@@ -387,6 +559,8 @@ order by 交易日期
         DingTalkAppSecret.AddHistoryValue()
 
         AppSettingHelper.SaveToLocaltion()
+
+        Wangk.ResourceWPF.Toast.ShowSuccess(Me, "修改成功")
 
     End Sub
 
