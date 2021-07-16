@@ -24,7 +24,7 @@ Class MainWindow
         StartAutoRun.IsChecked = AppSettingHelper.Instance.StartAutoRun
 
         SendTimer = New Timer With {
-            .Interval = 30 * 1000
+            .Interval = 40 * 1000
         }
         AddHandler SendTimer.Elapsed, AddressOf SendTimerElapsed
 
@@ -37,6 +37,11 @@ Class MainWindow
     ''' </summary>
     Private Sub SendTimerElapsed(sender As Object, e As ElapsedEventArgs)
         Console.WriteLine("定时处理")
+
+        ' 心跳包
+        If Now.Minute Mod 30 = 0 Then
+            Analytics.TrackEvent("心跳包")
+        End If
 
         ' 周末不发送
         If Now.DayOfWeek = DayOfWeek.Saturday OrElse
