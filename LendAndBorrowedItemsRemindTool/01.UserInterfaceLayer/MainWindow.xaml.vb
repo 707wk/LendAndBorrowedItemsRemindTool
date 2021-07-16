@@ -38,6 +38,12 @@ Class MainWindow
     Private Sub SendTimerElapsed(sender As Object, e As ElapsedEventArgs)
         Console.WriteLine("定时处理")
 
+        ' 周末不发送
+        If Now.DayOfWeek = DayOfWeek.Saturday OrElse
+            Now.DayOfWeek = DayOfWeek.Sunday Then
+            Exit Sub
+        End If
+
         ' 定时发送
         If Now.Hour <> AppSettingHelper.Instance.SendMsgTime.Hours OrElse
             Now.Minute <> AppSettingHelper.Instance.SendMsgTime.Minutes Then
