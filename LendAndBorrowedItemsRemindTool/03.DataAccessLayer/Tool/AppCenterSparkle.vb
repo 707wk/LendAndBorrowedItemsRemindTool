@@ -1,5 +1,6 @@
 ﻿Imports System.Net.Http
 Imports System.Xml
+Imports Microsoft.AppCenter.Analytics
 
 Public Class AppCenterSparkle
 
@@ -86,6 +87,8 @@ Public Class AppCenterSparkle
                                      '是否更新 ?", MsgBoxStyle.YesNo Or MsgBoxStyle.Information, "升级提醒")
 
                                      '                                                                       End Function), MsgBoxResult) = MsgBoxResult.Yes Then
+
+                                     Analytics.TrackEvent("程序更新")
 
                                      Process.Start("DownloadUpdate.exe", $"""{enclosureNode.Attributes("url").Value}"" ""{System.Reflection.Assembly.GetExecutingAssembly().Location}""")
 

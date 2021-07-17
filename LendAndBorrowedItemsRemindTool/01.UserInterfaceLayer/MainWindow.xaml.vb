@@ -39,8 +39,14 @@ Class MainWindow
         Console.WriteLine("定时处理")
 
         ' 心跳包
-        If Now.Minute Mod 30 = 0 Then
+        If Now.Minute Mod 30 = 0 AndAlso
+            (Now - AppSettingHelper.Instance.LastSendHeartBeatDate).TotalMinutes > 1 Then
+
+            AppSettingHelper.Instance.LastSendHeartBeatDate = Now
+            AppSettingHelper.SaveToLocaltion()
+
             Analytics.TrackEvent("心跳包")
+            AppSettingHelper.Instance.Logger.Info("心跳包")
         End If
 
         ' 周末不发送
@@ -64,6 +70,7 @@ Class MainWindow
         AppSettingHelper.SaveToLocaltion()
 
         Analytics.TrackEvent("自动发送通知")
+        AppSettingHelper.Instance.Logger.Info("自动发送通知")
 
         Me.Dispatcher.Invoke(Sub()
                                  SendMessage(Nothing, Nothing)
@@ -111,6 +118,7 @@ Class MainWindow
 
         If e IsNot Nothing Then
             Analytics.TrackEvent("手动发送通知")
+            AppSettingHelper.Instance.Logger.Info("手动发送通知")
         End If
 
         Dim tmpWindow As New Wangk.ResourceWPF.BackgroundWork(Me) With {

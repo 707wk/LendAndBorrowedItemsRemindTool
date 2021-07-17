@@ -39,6 +39,7 @@ Class Application
                         GetType(Crashes))
 
         Analytics.TrackEvent("程序启动")
+        AppSettingHelper.Instance.Logger.Info("程序启动")
 
     End Sub
 
