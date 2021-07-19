@@ -266,7 +266,7 @@ Public Class AppSettingHelper
     Public LastSendDate As Date = Now.AddDays(-1)
 
     ''' <summary>
-    ''' 上次发送的日期
+    ''' 上次心跳包发送的时间
     ''' </summary>
     Public LastSendHeartBeatDate As DateTime = Now.AddDays(-1)
 
