@@ -30,6 +30,11 @@ Class MainWindow
 
         SendTimer.Start()
 
+        ' 开机自启后最小化
+        If AppSettingHelper.Instance.StartAutoRun Then
+            Me.WindowState = WindowState.Minimized
+        End If
+
     End Sub
 
     ''' <summary>
