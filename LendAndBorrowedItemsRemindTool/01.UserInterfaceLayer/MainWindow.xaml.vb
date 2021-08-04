@@ -428,7 +428,7 @@ order by 交易日期
 
             Next
 
-            Cursor += 1
+            Cursor += req.Size
         Loop
 
     End Sub
