@@ -309,6 +309,13 @@ order by 交易日期
                               ' 发送消息
                               SendDingTalkWorkMessage(AppSettingHelper.Instance.DingTalkUserJobNumberItems(item.YGBH), item)
 
+                              AppSettingHelper.Instance.Logger.Info($"单据编号 {String.Join("-",
+                                                                                        {
+                                                                                        item.JYDB,
+                                                                                        item.JYDH,
+                                                                                        item.JYDX
+                                                                                        })}")
+                              AppSettingHelper.Instance.Logger.Info($"发送通知消息至 {item.YGXM}({item.YGBH})")
                               'SendDingTalkMessage("3349644230885065", item)
                               'Exit For
 
