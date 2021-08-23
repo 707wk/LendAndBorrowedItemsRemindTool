@@ -132,6 +132,7 @@ Class MainWindow
 
         tmpWindow.Run(Sub(uie)
                           Dim stepCount = 5
+                          Dim tmpID = 1
 
 #Region "获取未结束表单"
                           uie.Write("获取未结束表单", 0 * 100 / stepCount)
@@ -251,32 +252,39 @@ order by 交易日期
                           GetDingTalkAccessToken()
 #End Region
 
+                          ' 判断是否有无对应的钉钉账号的ERP用户
+                          If Not AppSettingHelper.Instance.DocumentItems.All(Function(s1)
+                                                                                 Return AppSettingHelper.Instance.DingTalkUserJobNumberItems.ContainsKey(s1.YGBH)
+                                                                             End Function) Then
+
 #Region "获取钉钉部门信息"
-                          uie.Write("获取钉钉部门信息", 2 * 100 / stepCount)
+                              uie.Write("获取钉钉部门信息", 2 * 100 / stepCount)
 
-                          AppSettingHelper.Instance.DingTalkDepartmentIDItems.Clear()
+                              AppSettingHelper.Instance.DingTalkDepartmentIDItems.Clear()
 
-                          GetDingTalkDepartmentIDItems(1)
+                              GetDingTalkDepartmentIDItems(1)
 
-                          Console.WriteLine($"部门数 : {AppSettingHelper.Instance.DingTalkDepartmentIDItems.Count}")
+                              Console.WriteLine($"部门数 : {AppSettingHelper.Instance.DingTalkDepartmentIDItems.Count}")
 #End Region
 
 #Region "获取钉钉员工信息"
-                          uie.Write("获取钉钉员工信息", 3 * 100 / stepCount)
+                              uie.Write("获取钉钉员工信息", 3 * 100 / stepCount)
 
-                          AppSettingHelper.Instance.DingTalkUserJobNumberItems.Clear()
+                              AppSettingHelper.Instance.DingTalkUserJobNumberItems.Clear()
 
-                          Dim tmpID = 1
-                          For Each item In AppSettingHelper.Instance.DingTalkDepartmentIDItems
+                              tmpID = 1
+                              For Each item In AppSettingHelper.Instance.DingTalkDepartmentIDItems
 
-                              uie.Write($"获取钉钉员工信息 {tmpID}/{AppSettingHelper.Instance.DingTalkDepartmentIDItems.Count}")
-                              tmpID += 1
+                                  uie.Write($"获取钉钉员工信息 {tmpID}/{AppSettingHelper.Instance.DingTalkDepartmentIDItems.Count}")
+                                  tmpID += 1
 
-                              GetDingTalkUserItems(item)
-                          Next
+                                  GetDingTalkUserItems(item)
+                              Next
 
-                          Console.WriteLine($"有工号的员工数 : {AppSettingHelper.Instance.DingTalkUserJobNumberItems.Count}")
+                              Console.WriteLine($"有工号的员工数 : {AppSettingHelper.Instance.DingTalkUserJobNumberItems.Count}")
 #End Region
+
+                          End If
 
 #Region "发送工作通知消息"
                           uie.Write("发送工作通知消息", 4 * 100 / stepCount)
@@ -286,6 +294,9 @@ order by 交易日期
 
                           tmpID = 1
                           For Each item In AppSettingHelper.Instance.DocumentItems
+
+                              ' 钉钉限制发送频率 1500/min
+                              Threading.Thread.Sleep(100)
 
                               uie.Write($"发送工作通知消息 {tmpID}/{AppSettingHelper.Instance.DocumentItems.Count}")
                               tmpID += 1
@@ -471,6 +482,8 @@ order by 交易日期
         obj1.Markdown = obj2
         req.Msg_ = obj1
         Dim rsp As OapiMessageCorpconversationAsyncsendV2Response = client.Execute(req, AppSettingHelper.Instance.DingTalkAccessToken)
+
+        AppSettingHelper.Instance.Logger.Info($"消息TaskId {rsp.TaskId} {rsp.Errcode}-{rsp.Errmsg}")
 
     End Sub
 #End Region
