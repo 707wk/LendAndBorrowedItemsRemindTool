@@ -90,6 +90,11 @@ Public Class AppSettingHelper
                 Dim assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location
                 _instance._ProductVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).ProductVersion
 
+                ' 添加数据库
+                If Not File.Exists($"{System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Hunan Yestech\{My.Application.Info.ProductName}\Data\LocalDatabase.db") Then
+                    File.Copy("Data\LocalDatabase.db", $"{System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Hunan Yestech\{My.Application.Info.ProductName}\Data\LocalDatabase.db", True)
+                End If
+
             End If
 
             Return _instance
@@ -250,10 +255,9 @@ Public Class AppSettingHelper
 #End Region
 
     ''' <summary>
-    ''' 输入历史
-    ''' </summary>
-    Public InputHistoryItems As New Dictionary(Of String, List(Of String)) From {
-    }
+    ''' 本地数据库地址
+    ''' </summary> 
+    Public Shared SQLiteConnection As String = $"data source= {System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Hunan Yestech\{My.Application.Info.ProductName}\Data\LocalDatabase.db"
 
     ''' <summary>
     ''' 开机启动
@@ -263,12 +267,34 @@ Public Class AppSettingHelper
     ''' <summary>
     ''' 上次发送的日期
     ''' </summary>
-    Public LastSendDate As Date = Now.AddDays(-1)
+    <JsonIgnore>
+    Public Property LastSendDate As Date
+        Get
+            Dim tmpValue = LocalDatabaseHelper.GetOption(Of Date?)(NameOf(LastSendDate))
+            Return tmpValue.GetValueOrDefault(Now.AddDays(-1))
+        End Get
+
+        Set(value As Date)
+            LocalDatabaseHelper.SetOption(NameOf(LastSendDate), value)
+        End Set
+
+    End Property
 
     ''' <summary>
     ''' 上次心跳包发送的时间
     ''' </summary>
-    Public LastSendHeartBeatDate As DateTime = Now.AddDays(-1)
+    <JsonIgnore>
+    Public Property LastSendHeartBeatDate As Date
+        Get
+            Dim tmpValue = LocalDatabaseHelper.GetOption(Of Date?)(NameOf(LastSendHeartBeatDate))
+            Return tmpValue.GetValueOrDefault(Now.AddDays(-1))
+        End Get
+
+        Set(value As Date)
+            LocalDatabaseHelper.SetOption(NameOf(LastSendHeartBeatDate), value)
+        End Set
+
+    End Property
 
     ''' <summary>
     ''' 通知发送时间

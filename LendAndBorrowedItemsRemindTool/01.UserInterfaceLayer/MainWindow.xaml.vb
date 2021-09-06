@@ -48,7 +48,6 @@ Class MainWindow
             (Now - AppSettingHelper.Instance.LastSendHeartBeatDate).TotalMinutes > 1 Then
 
             AppSettingHelper.Instance.LastSendHeartBeatDate = Now
-            AppSettingHelper.SaveToLocaltion()
 
             Analytics.TrackEvent("心跳包")
             AppSettingHelper.Instance.Logger.Info("心跳包")
@@ -72,7 +71,6 @@ Class MainWindow
         End If
 
         AppSettingHelper.Instance.LastSendDate = Now.Date
-        AppSettingHelper.SaveToLocaltion()
 
         Analytics.TrackEvent("自动发送通知")
         AppSettingHelper.Instance.Logger.Info("自动发送通知")
@@ -87,8 +85,6 @@ Class MainWindow
 
         SendTimer.Stop()
         RemoveHandler SendTimer.Elapsed, AddressOf SendTimerElapsed
-
-        AppSettingHelper.SaveToLocaltion()
 
         System.Windows.Application.Current.Shutdown()
 

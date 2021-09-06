@@ -12,11 +12,11 @@
 
             _historyItemKey = value
 
-            If AppSettingHelper.Instance.InputHistoryItems.ContainsKey(HistoryItemKey) Then
+            If LocalDatabaseHelper.OptionExists(HistoryItemKey) Then
                 '有记录
                 If IsEditable Then
                     '可编辑状态
-                    Dim values = AppSettingHelper.Instance.InputHistoryItems(HistoryItemKey)
+                    Dim values = LocalDatabaseHelper.GetOption(Of List(Of String))(HistoryItemKey)
                     For Each item In values
                         PropertySelectComboBox.Items.Add(item)
                     Next
@@ -30,7 +30,7 @@
 
                 Else
                     '不可编辑状态
-                    Dim values = AppSettingHelper.Instance.InputHistoryItems(HistoryItemKey)
+                    Dim values = LocalDatabaseHelper.GetOption(Of List(Of String))(HistoryItemKey)
                     If values.Count = 0 Then
                         Exit Property
                     End If
@@ -42,7 +42,7 @@
 
             Else
                 '无记录
-                AppSettingHelper.Instance.InputHistoryItems.Add(HistoryItemKey, New List(Of String))
+                LocalDatabaseHelper.SetOption(HistoryItemKey, New List(Of String))
 
             End If
 
@@ -111,7 +111,7 @@
         Dim tmpValue = Value
 
         If Not PropertySelectComboBox.IsEditable Then
-            AppSettingHelper.Instance.InputHistoryItems(HistoryItemKey) = {tmpValue}.ToList
+            LocalDatabaseHelper.SetOption(HistoryItemKey, {tmpValue})
             Exit Sub
         End If
 
@@ -133,7 +133,7 @@
         Dim values = (From item In PropertySelectComboBox.Items
                       Select $"{item}").ToList
 
-        AppSettingHelper.Instance.InputHistoryItems(HistoryItemKey) = values
+        LocalDatabaseHelper.SetOption(HistoryItemKey, values)
 
     End Sub
 
@@ -145,7 +145,7 @@
         If Not IsEditable Then
 
             '只读状态
-            Dim values = AppSettingHelper.Instance.InputHistoryItems(HistoryItemKey)
+            Dim values = LocalDatabaseHelper.GetOption(Of List(Of String))(HistoryItemKey)
             If values.Count = 0 Then
                 Exit Sub
             End If
