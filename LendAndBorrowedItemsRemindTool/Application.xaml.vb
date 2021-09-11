@@ -1,10 +1,14 @@
 ﻿Imports System.Globalization
+Imports System.Threading
 Imports System.Windows.Threading
 Imports Microsoft.AppCenter
 Imports Microsoft.AppCenter.Analytics
 Imports Microsoft.AppCenter.Crashes
 
 Class Application
+
+    Private Shared _mutex As Mutex
+
     Private Sub Application_DispatcherUnhandledException(sender As Object, e As DispatcherUnhandledExceptionEventArgs) Handles Me.DispatcherUnhandledException
 
         Application_Exit(Nothing, Nothing)
@@ -26,6 +30,14 @@ Class Application
     End Sub
 
     Private Sub Application_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
+
+        ' 单例模式
+        Dim createdNew As Boolean
+        _mutex = New Mutex(True, AppSettingHelper.Instance.GUID, createdNew)
+
+        If Not createdNew Then
+            Application.Current.Shutdown()
+        End If
 
         Dim countryCode = RegionInfo.CurrentRegion.TwoLetterISORegionName
         AppCenter.SetCountryCode(countryCode)
