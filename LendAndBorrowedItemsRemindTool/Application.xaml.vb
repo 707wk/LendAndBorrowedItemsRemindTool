@@ -6,9 +6,6 @@ Imports Microsoft.AppCenter.Analytics
 Imports Microsoft.AppCenter.Crashes
 
 Class Application
-
-    Private Shared _mutex As Mutex
-
     Private Sub Application_DispatcherUnhandledException(sender As Object, e As DispatcherUnhandledExceptionEventArgs) Handles Me.DispatcherUnhandledException
 
         Application_Exit(Nothing, Nothing)
@@ -32,10 +29,10 @@ Class Application
     Private Sub Application_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
 
         ' 单例模式
-        Dim createdNew As Boolean
-        _mutex = New Mutex(True, AppSettingHelper.Instance.GUID, createdNew)
-
-        If Not createdNew Then
+        Dim tmpProcess = Process.GetCurrentProcess()
+        Dim processCount = Process.GetProcessesByName(tmpProcess.ProcessName).Count()
+        ' 有多个实例则退出程序
+        If processCount > 1 Then
             Application.Current.Shutdown()
         End If
 
