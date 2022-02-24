@@ -1,9 +1,4 @@
-﻿Imports System.Globalization
-Imports System.Threading
-Imports System.Windows.Threading
-Imports Microsoft.AppCenter
-Imports Microsoft.AppCenter.Analytics
-Imports Microsoft.AppCenter.Crashes
+﻿Imports System.Windows.Threading
 
 Class Application
     Private Sub Application_DispatcherUnhandledException(sender As Object, e As DispatcherUnhandledExceptionEventArgs) Handles Me.DispatcherUnhandledException
@@ -36,17 +31,6 @@ Class Application
             Application.Current.Shutdown()
         End If
 
-        Dim countryCode = RegionInfo.CurrentRegion.TwoLetterISORegionName
-        AppCenter.SetCountryCode(countryCode)
-
-        '使用调试器时不记录数据
-        Analytics.SetEnabledAsync(Not Debugger.IsAttached)
-
-        AppCenter.Start(AppSettingHelper.AppKey,
-                        GetType(Analytics),
-                        GetType(Crashes))
-
-        Analytics.TrackEvent("程序启动")
         AppSettingHelper.Instance.Logger.Info("程序启动")
 
     End Sub

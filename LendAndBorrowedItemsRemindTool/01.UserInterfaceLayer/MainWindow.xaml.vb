@@ -1,11 +1,8 @@
 ﻿Imports System.Data.SqlClient
-Imports System.IO
 Imports System.Timers
 Imports DingTalk.Api
 Imports DingTalk.Api.Request
 Imports DingTalk.Api.Response
-Imports Microsoft.AppCenter.Analytics
-Imports OfficeOpenXml
 
 Class MainWindow
 
@@ -16,10 +13,7 @@ Class MainWindow
         Me.Title = $"{My.Application.Info.Title} V{AppSettingHelper.Instance.ProductVersion}"
 
         '设置使用方式为个人使用
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
-
-        Dim tmpAppCenterSparkle As New AppCenterSparkle(AppSettingHelper.AppKey, Me)
-        tmpAppCenterSparkle.CheckUpdateAsync()
+        'ExcelPackage.LicenseContext = LicenseContext.NonCommercial
 
         StartAutoRun.IsChecked = AppSettingHelper.Instance.StartAutoRun
 
@@ -49,7 +43,6 @@ Class MainWindow
 
             AppSettingHelper.Instance.LastSendHeartBeatDate = Now
 
-            Analytics.TrackEvent("心跳包")
             AppSettingHelper.Instance.Logger.Info("心跳包")
         End If
 
@@ -72,7 +65,6 @@ Class MainWindow
 
         AppSettingHelper.Instance.LastSendDate = Now.Date
 
-        Analytics.TrackEvent("自动发送通知")
         AppSettingHelper.Instance.Logger.Info("自动发送通知")
 
         Me.Dispatcher.Invoke(Sub()
@@ -118,7 +110,7 @@ Class MainWindow
     Private Sub SendMessage(sender As Object, e As RoutedEventArgs)
 
         If e IsNot Nothing Then
-            Analytics.TrackEvent("手动发送通知")
+            LogHelper.LogEvent("手动发送通知")
             AppSettingHelper.Instance.Logger.Info("手动发送通知")
         End If
 
@@ -312,6 +304,8 @@ order by 交易日期
 
                                   Continue For
                               End If
+
+                              LogHelper.LogEvent("发送通知消息")
 
                               ' 发送消息
                               SendDingTalkWorkMessage(AppSettingHelper.Instance.DingTalkUserJobNumberItems(item.YGBH), item)

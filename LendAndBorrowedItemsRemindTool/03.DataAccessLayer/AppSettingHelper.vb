@@ -255,6 +255,11 @@ Public Class AppSettingHelper
 #End Region
 
     ''' <summary>
+    ''' 设备 ID
+    ''' </summary>
+    Public DeviceID As String = Wangk.Hash.IDHelper.NewID
+
+    ''' <summary>
     ''' 本地数据库地址
     ''' </summary> 
     Public Shared SQLiteConnection As String = $"data source= {System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Hunan Yestech\{My.Application.Info.ProductName}\Data\LocalDatabase.db"
