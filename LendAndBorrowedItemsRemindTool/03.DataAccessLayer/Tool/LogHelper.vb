@@ -26,7 +26,7 @@ Public Class LogHelper
         Dim tmpHttpContent = New StringContent(JsonConvert.SerializeObject(tmpLogInfo))
         tmpHttpContent.Headers.ContentType = New Headers.MediaTypeHeaderValue("application/json")
 
-        PostLogHttpClient.PostAsync("https://online.yesled.cn:9001/api/Tools/Log/Post", tmpHttpContent)
+        PostLogHttpClient.PostAsync("https://online.csyes.com:9001/api/Tools/Log/Post", tmpHttpContent)
 
     End Sub
 
