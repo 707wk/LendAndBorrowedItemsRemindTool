@@ -236,6 +236,9 @@ order by 交易日期
 
 #Region "获取工号对应的钉钉账号信息"
                           uie.Write("获取工号对应的钉钉账号信息", 1 * 100 / stepCount)
+
+                          AppSettingHelper.Instance.DingTalkUserJobNumberItems.Clear()
+
                           For Each item In AppSettingHelper.Instance.DocumentItems
 
                               ' 已存在则不获取信息
