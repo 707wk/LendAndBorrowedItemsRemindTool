@@ -119,7 +119,7 @@ Class MainWindow
         }
 
         tmpWindow.Run(Sub(uie)
-                          Dim stepCount = 5
+                          Dim stepCount = 4
                           Dim tmpID = 1
 
 #Region "获取未结束表单"
@@ -234,48 +234,38 @@ order by 交易日期
                           Console.WriteLine($"表单数 : {AppSettingHelper.Instance.DocumentItems.Count}")
 #End Region
 
+#Region "获取工号对应的钉钉账号信息"
+                          uie.Write("获取工号对应的钉钉账号信息", 1 * 100 / stepCount)
+                          For Each item In AppSettingHelper.Instance.DocumentItems
+
+                              ' 已存在则不获取信息
+                              If AppSettingHelper.Instance.DingTalkUserJobNumberItems.ContainsKey(item.YGBH) Then
+                                  Continue For
+                              End If
+
+                              Dim tmpResult = WebAPIHelper.GetData(Of ERPInfoServiceLib.DingTalkUserInfo)($"https://online.csyes.com:9001/api/Account/Info/ByJobNumber?JobNumber={item.YGBH}")
+
+                              If tmpResult Is Nothing Then
+                                  Continue For
+                              End If
+
+                              If Not tmpResult.Success Then
+                                  Continue For
+                              End If
+
+                              AppSettingHelper.Instance.DingTalkUserJobNumberItems.Add(tmpResult.Data.JobNumber, tmpResult.Data.Userid)
+
+                          Next
+#End Region
+
 #Region "获取钉钉AccessToken"
-                          uie.Write("获取钉钉AccessToken", 1 * 100 / stepCount)
+                          uie.Write("获取钉钉AccessToken", 2 * 100 / stepCount)
 
                           GetDingTalkAccessToken()
 #End Region
 
-                          ' 判断是否有无对应的钉钉账号的ERP用户
-                          If Not AppSettingHelper.Instance.DocumentItems.All(Function(s1)
-                                                                                 Return AppSettingHelper.Instance.DingTalkUserJobNumberItems.ContainsKey(s1.YGBH)
-                                                                             End Function) Then
-
-#Region "获取钉钉部门信息"
-                              uie.Write("获取钉钉部门信息", 2 * 100 / stepCount)
-
-                              AppSettingHelper.Instance.DingTalkDepartmentIDItems.Clear()
-
-                              GetDingTalkDepartmentIDItems(1)
-
-                              Console.WriteLine($"部门数 : {AppSettingHelper.Instance.DingTalkDepartmentIDItems.Count}")
-#End Region
-
-#Region "获取钉钉员工信息"
-                              uie.Write("获取钉钉员工信息", 3 * 100 / stepCount)
-
-                              AppSettingHelper.Instance.DingTalkUserJobNumberItems.Clear()
-
-                              tmpID = 1
-                              For Each item In AppSettingHelper.Instance.DingTalkDepartmentIDItems
-
-                                  uie.Write($"获取钉钉员工信息 {tmpID}/{AppSettingHelper.Instance.DingTalkDepartmentIDItems.Count}")
-                                  tmpID += 1
-
-                                  GetDingTalkUserItems(item)
-                              Next
-
-                              Console.WriteLine($"有工号的员工数 : {AppSettingHelper.Instance.DingTalkUserJobNumberItems.Count}")
-#End Region
-
-                          End If
-
 #Region "发送工作通知消息"
-                          uie.Write("发送工作通知消息", 4 * 100 / stepCount)
+                          uie.Write("发送工作通知消息", 3 * 100 / stepCount)
 
                           ' 无对应的钉钉账号的ERP用户
                           Dim NotHaveJobNumberUserItems As New Dictionary(Of String, String)
@@ -374,70 +364,6 @@ order by 交易日期
         req.SetHttpMethod("GET")
         Dim rsp As OapiGettokenResponse = client.Execute(req, Nothing)
         AppSettingHelper.Instance.DingTalkAccessToken = rsp.AccessToken
-
-    End Sub
-#End Region
-
-#Region "获取钉钉部门信息"
-    ''' <summary>
-    ''' 获取钉钉部门信息
-    ''' </summary>
-    Private Sub GetDingTalkDepartmentIDItems(parentDepartmentID As Long)
-
-        Dim client As IDingTalkClient = New DefaultDingTalkClient("https://oapi.dingtalk.com/topapi/v2/department/listsub")
-        Dim req As OapiV2DepartmentListsubRequest = New OapiV2DepartmentListsubRequest()
-        req.DeptId = parentDepartmentID
-        Dim rsp As OapiV2DepartmentListsubResponse = client.Execute(req, AppSettingHelper.Instance.DingTalkAccessToken)
-
-        If rsp.Result Is Nothing Then
-            Exit Sub
-        End If
-
-        For Each item In rsp.Result
-            AppSettingHelper.Instance.DingTalkDepartmentIDItems.Add(item.DeptId)
-
-            GetDingTalkDepartmentIDItems(item.DeptId)
-        Next
-
-    End Sub
-#End Region
-
-#Region "获取钉钉部门用户信息"
-    ''' <summary>
-    ''' 获取钉钉部门用户信息
-    ''' </summary>
-    Private Sub GetDingTalkUserItems(parentDepartmentID As Long)
-
-        Dim client As IDingTalkClient = New DefaultDingTalkClient("https://oapi.dingtalk.com/topapi/v2/user/list")
-
-        Dim Cursor As Long = 0
-
-        Do
-
-            Dim req As OapiV2UserListRequest = New OapiV2UserListRequest()
-            req.DeptId = parentDepartmentID
-            req.Cursor = Cursor
-            req.Size = 100L
-            Dim rsp As OapiV2UserListResponse = client.Execute(req, AppSettingHelper.Instance.DingTalkAccessToken)
-
-            If rsp.Result.List Is Nothing Then
-                Exit Sub
-            End If
-
-            For Each item In rsp.Result.List
-
-                If String.IsNullOrWhiteSpace(item.JobNumber) Then
-                    Continue For
-                End If
-
-                If Not AppSettingHelper.Instance.DingTalkUserJobNumberItems.ContainsKey(item.JobNumber) Then
-                    AppSettingHelper.Instance.DingTalkUserJobNumberItems.Add(item.JobNumber, item.Userid)
-                End If
-
-            Next
-
-            Cursor += req.Size
-        Loop
 
     End Sub
 #End Region

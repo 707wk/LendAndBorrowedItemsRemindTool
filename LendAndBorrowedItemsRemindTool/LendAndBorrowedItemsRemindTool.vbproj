@@ -158,6 +158,7 @@
     <Compile Include="03.DataAccessLayer\Tool\FileHelper.vb" />
     <Compile Include="03.DataAccessLayer\Tool\LogHelper.vb" />
     <Compile Include="03.DataAccessLayer\Tool\StringHelper.vb" />
+    <Compile Include="03.DataAccessLayer\Tool\WebAPIHelper.vb" />
     <Compile Include="Application.xaml.vb">
       <DependentUpon>Application.xaml</DependentUpon>
       <SubType>Code</SubType>
